@@ -1,0 +1,4 @@
+{
+    "api_base_url": "https://api.starlingbank.com",
+    "transactions_url": "/api/v1/transactions"
+}
