@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from datetime import date
 
 today = str(date.today())
-transactions = services.get_transactions(services.get_config_var('transactions_start_date'), today)
+transactions = services.extract_transactions(services.get_transactions(services.get_config_var('transactions_start_date'), today))
 
 df = pd.DataFrame(transactions)
 df['created'] = pd.to_datetime(df['created'])
