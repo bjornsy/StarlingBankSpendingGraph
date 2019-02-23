@@ -5,7 +5,7 @@ import json
 with open('config.json') as config_file:
     config = json.load(config_file)
 
-def get_config_var(name) -> str:
+def get_config_var(name: str) -> str:
     '''Returns config variables from config.json
     Args:
         name (str): Name of variable to get
@@ -15,7 +15,7 @@ def get_config_var(name) -> str:
     return config[name]
 
 
-def get_environmental_var(name) -> str:
+def get_environmental_var(name: str) -> str:
     '''Returns environmental variables for keys/secrets
     Args:
         name (str): Name of environmental variable to get
