@@ -11,4 +11,4 @@ def create_annot(axs_reference: 'matplotlib.axes._subplots.AxesSubplot') -> 'mat
     return annot
 
 def format_currency(num: float) -> str:
-    return '{:.2f}'.format(num)
+    return '£{:.2f}'.format(num)
