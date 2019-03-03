@@ -25,37 +25,38 @@ def update_annot_bar(artist, annot_bar) -> None:
     annot_bar.set_text(text)
     annot_bar.get_bbox_patch().set_alpha(0.4)
 
-def hover(event) -> None:   
-    subplot = event.inaxes 
-    if subplot.lines:
-        fig = subplot.figure
-        line = subplot.lines[0]
-        annot = subplot.texts[0]
-        cont, ind = line.contains(event)
-        if cont:
-            update_annot(ind, annot, line)
-            annot.set_visible(True)
-            fig.canvas.draw_idle()
-        else:
-            vis = annot.get_visible()
-            if vis:
-                annot.set_visible(False)
+def hover(event) -> None:
+    if event.inaxes:   
+        subplot = event.inaxes 
+        if subplot.lines:
+            fig = subplot.figure
+            line = subplot.lines[0]
+            annot = subplot.texts[0]
+            cont, ind = line.contains(event)
+            if cont:
+                update_annot(ind, annot, line)
+                annot.set_visible(True)
                 fig.canvas.draw_idle()
-    if subplot.containers:
-        an_artist_is_hovered = False
-        fig = subplot.figure
-        annot_bar = subplot.texts[0]
-        containers = subplot.containers[0]
-        for artist in containers:
-            contains, _ = artist.contains(event)
-            if contains:
-                an_artist_is_hovered = True
-                update_annot_bar(artist, annot_bar)
-                annot_bar.set_visible(True)
+            else:
+                vis = annot.get_visible()
+                if vis:
+                    annot.set_visible(False)
+                    fig.canvas.draw_idle()
+        if subplot.containers:
+            an_artist_is_hovered = False
+            fig = subplot.figure
+            annot_bar = subplot.texts[0]
+            containers = subplot.containers[0]
+            for artist in containers:
+                contains, _ = artist.contains(event)
+                if contains:
+                    an_artist_is_hovered = True
+                    update_annot_bar(artist, annot_bar)
+                    annot_bar.set_visible(True)
+                    fig.canvas.draw_idle()
+            if not an_artist_is_hovered:
+                annot_bar.set_visible(False)
                 fig.canvas.draw_idle()
-        if not an_artist_is_hovered:
-            annot_bar.set_visible(False)
-            fig.canvas.draw_idle()
 
 def pick(event) -> None:
     return None
