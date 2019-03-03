@@ -2,9 +2,10 @@ def set_common_properties(subplot: 'matplotlib.axes._subplots.AxesSubplot') -> N
     subplot.set_ylim(0)
     subplot.set_xlabel('Date')
     subplot.set_ylabel('Amount spent (£)')
-    subplot.annotate("", xy=(0,0), xytext=(-20,20),textcoords="offset points",
+    annot = subplot.annotate("", xy=(0,0), xytext=(-20,20),textcoords="offset points",
                     bbox=dict(boxstyle="round", fc="w"),
                     arrowprops=dict(arrowstyle="->"))
+    annot.set_visible(False)
 
 def update_annot(ind, annot, line) -> None:
     horizontal_pos_array = ind["ind"] #Where the hover event takes place (normalised horizontal position)
@@ -24,9 +25,9 @@ def update_annot_bar(artist, annot_bar) -> None:
     annot_bar.set_text(text)
     annot_bar.get_bbox_patch().set_alpha(0.4)
 
-def hover(event, axs) -> None:    
-    if event.inaxes == axs[0]:
-        subplot = axs[0]
+def hover(event) -> None:   
+    subplot = event.inaxes 
+    if subplot.lines:
         fig = subplot.figure
         line = subplot.lines[0]
         annot = subplot.texts[0]
@@ -40,9 +41,8 @@ def hover(event, axs) -> None:
             if vis:
                 annot.set_visible(False)
                 fig.canvas.draw_idle()
-    if event.inaxes == axs[1]:
+    if subplot.containers:
         an_artist_is_hovered = False
-        subplot = axs[1]
         fig = subplot.figure
         annot_bar = subplot.texts[0]
         containers = subplot.containers[0]
@@ -56,6 +56,9 @@ def hover(event, axs) -> None:
         if not an_artist_is_hovered:
             annot_bar.set_visible(False)
             fig.canvas.draw_idle()
+
+def pick(event) -> None:
+    return None
 
 def format_currency(num: float) -> str:
     return '£{:.2f}'.format(num)

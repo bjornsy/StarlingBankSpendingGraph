@@ -22,11 +22,12 @@ grouped_transactions_day.plot(ax=axs[0], legend=None)
 graph_helpers.set_common_properties(axs[0])
 axs[0].set_title('Amount spent per day')
 
-grouped_transactions_month.plot.bar(ax=axs[1], legend=None, rot=0)
+grouped_transactions_month.plot.bar(ax=axs[1], legend=None, rot=0, picker=True)
 graph_helpers.set_common_properties(axs[1])
 axs[1].set_title('Amount spent per month')
 axs[1].set_xticklabels(grouped_transactions_month.index.strftime('%Y-%b'))
 
-fig.canvas.mpl_connect("motion_notify_event", lambda event: graph_helpers.hover(event, axs))
+fig.canvas.mpl_connect("motion_notify_event", lambda event: graph_helpers.hover(event))
+#fig.canvas.mpl_connect('pick_event', lambda event: graph_helpers.pick(event))
 
 plt.show()
