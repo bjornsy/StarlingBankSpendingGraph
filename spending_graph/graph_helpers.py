@@ -11,13 +11,7 @@ def set_common_properties(subplot: 'matplotlib.axes._subplots.AxesSubplot') -> N
                     arrowprops=dict(arrowstyle="->"))
     annot.set_visible(False)
 
-def update_annot(ind, annot, line) -> None:
-    horizontal_pos_array = ind["ind"] #Where the hover event takes place (normalised horizontal position)
-    x,y = line.get_data()
-    annot.xy = (x[horizontal_pos_array[0]], y[horizontal_pos_array[0]]) #Using minimum value for consistency (if hovering over more than one)
-    amount_text = format_currency(y[horizontal_pos_array.min()])
-    date_text = x[horizontal_pos_array.min()]
-    text = f'{date_text}, {amount_text}'
+def update_annot(annot, text) -> None:
     annot.set_text(text)
     annot.get_bbox_patch().set_alpha(0.4)
 
@@ -37,7 +31,13 @@ def hover(event) -> None:
             annot = subplot.texts[0]
             cont, ind = line.contains(event)
             if cont:
-                update_annot(ind, annot, line)
+                horizontal_pos_array = ind["ind"] #Where the hover event takes place (normalised horizontal position)
+                x,y = line.get_data()
+                annot.xy = (x[horizontal_pos_array[0]], y[horizontal_pos_array[0]]) #Using minimum value for consistency (if hovering over more than one)
+                amount_text = format_currency(y[horizontal_pos_array.min()])
+                date_text = x[horizontal_pos_array.min()]
+                text = f'{date_text}, {amount_text}'
+                update_annot(annot, text)
                 annot.set_visible(True)
                 fig.canvas.draw_idle()
             else:
@@ -62,10 +62,25 @@ def hover(event) -> None:
                 annot_bar.set_visible(False)
                 fig.canvas.draw_idle()
 
-def pick(event, grouped_transactions) -> None:
+def pick(event, grouped_transactions_day_and_month: tuple) -> None:
     if event.mouseevent.inaxes:   
         subplot = event.mouseevent.inaxes
+        if subplot.lines:
+            grouped_transactions = grouped_transactions_day_and_month[0]
+            fig = subplot.figure
+            line = subplot.lines[0]
+            annot = subplot.texts[0]
+            contains, ind = line.contains(event.mouseevent)
+            if contains:
+                horizontal_pos_array = ind["ind"]
+                x, y = line.get_data()
+                date_key = x[horizontal_pos_array.min()].to_timestamp("D").tz_localize("UTC")
+                text = get_top_transactions_text(date_key, grouped_transactions)
+                update_annot(annot, text)
+                annot.set_visible(True)
+                fig.canvas.draw_idle()
         if subplot.containers:
+            grouped_transactions = grouped_transactions_day_and_month[1]
             fig = subplot.figure
             annot_bar = subplot.texts[0]
             containers = subplot.containers[0]

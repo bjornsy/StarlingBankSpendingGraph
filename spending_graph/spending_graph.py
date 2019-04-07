@@ -15,6 +15,7 @@ outbound_transactions['amount'] = abs(df['amount'])
 
 grouped_transactions_day = outbound_transactions.groupby(pd.Grouper(key='created', freq='D'))
 grouped_transactions_month = outbound_transactions.groupby(pd.Grouper(key='created', freq='M'))
+grouped_transactions = (grouped_transactions_day, grouped_transactions_month)
 
 grouped_transactions_day_sum = grouped_transactions_day[['created', 'amount']].sum()
 grouped_transactions_month_sum = grouped_transactions_month[['created', 'amount']].sum()
@@ -31,6 +32,6 @@ axs[1].set_title('Amount spent per month')
 axs[1].set_xticklabels(grouped_transactions_month_sum.index.strftime(services.get_config_var("bar_xtick_format")))
 
 fig.canvas.mpl_connect("motion_notify_event", lambda event: graph_helpers.hover(event))
-fig.canvas.mpl_connect('pick_event', lambda event: graph_helpers.pick(event, grouped_transactions_month))
+fig.canvas.mpl_connect('pick_event', lambda event: graph_helpers.pick(event, grouped_transactions))
 
 plt.show()
