@@ -1,5 +1,6 @@
 {
     "api_base_url": "https://api.starlingbank.com",
     "transactions_url": "/api/v1/transactions",
-    "transactions_start_date": "2018-10-01"
+    "transactions_start_date": "2018-10-01",
+    "bar_xtick_format": "%Y-%b"
 }
