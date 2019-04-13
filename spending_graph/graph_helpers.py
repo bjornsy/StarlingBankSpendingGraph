@@ -6,9 +6,9 @@ def set_common_properties(subplot: 'matplotlib.axes._subplots.AxesSubplot') -> N
     subplot.set_ylim(0)
     subplot.set_xlabel('Date')
     subplot.set_ylabel('Amount spent (£)')
-    annot = subplot.annotate("", xy=(0,0), xytext=(-20,20),textcoords="offset points",
+    annot = subplot.annotate("", xy=(0,0), xytext=(-10,20),textcoords="offset points",
                     bbox=dict(boxstyle="round", fc="w"),
-                    arrowprops=dict(arrowstyle="->"))
+                    arrowprops=dict(arrowstyle="->"), ha='center')
     annot.set_visible(False)
 
 def update_annot(annot, text) -> None:
