@@ -24,43 +24,37 @@ def update_annot_bar(artist, annot_bar, text) -> None:
 
 def hover(event) -> None:
     if event.inaxes:   
-        subplot = event.inaxes 
-        if subplot.lines:
-            fig = subplot.figure
-            line = subplot.lines[0]
-            annot = subplot.texts[0]
-            cont, ind = line.contains(event)
+        subplot_props = SubplotProperties(event.inaxes) 
+        if subplot_props.is_line_graph:
+            cont, ind = subplot_props.line.contains(event)
             if cont:
                 horizontal_pos_array = ind["ind"] #Where the hover event takes place (normalised horizontal position)
-                x,y = line.get_data()
-                annot.xy = (x[horizontal_pos_array[0]], y[horizontal_pos_array[0]]) #Using minimum value for consistency (if hovering over more than one)
+                x,y = subplot_props.line.get_data()
+                subplot_props.annotation.xy = (x[horizontal_pos_array[0]], y[horizontal_pos_array[0]]) #Using minimum value for consistency (if hovering over more than one)
                 amount_text = format_currency(y[horizontal_pos_array.min()])
                 date_text = x[horizontal_pos_array.min()]
                 text = f'{date_text}, {amount_text}'
-                update_annot(annot, text)
-                annot.set_visible(True)
-                fig.canvas.draw_idle()
+                update_annot(subplot_props.annotation, text)
+                subplot_props.annotation.set_visible(True)
+                subplot_props.figure.canvas.draw_idle()
             else:
-                vis = annot.get_visible()
+                vis = subplot_props.annotation.get_visible()
                 if vis:
-                    annot.set_visible(False)
-                    fig.canvas.draw_idle()
-        if subplot.containers:
+                    subplot_props.annotation.set_visible(False)
+                    subplot_props.figure.canvas.draw_idle()
+        if subplot_props.is_bar_chart:
             an_artist_is_hovered = False
-            fig = subplot.figure
-            annot_bar = subplot.texts[0]
-            containers = subplot.containers[0]
-            for artist in containers:
+            for artist in subplot_props.containers:
                 contains, _ = artist.contains(event)
                 if contains:
                     an_artist_is_hovered = True
                     text = format_currency(artist.get_height())
-                    update_annot_bar(artist, annot_bar, text)
-                    annot_bar.set_visible(True)
-                    fig.canvas.draw_idle()
+                    update_annot_bar(artist, subplot_props.annotation, text)
+                    subplot_props.annotation.set_visible(True)
+                    subplot_props.figure.canvas.draw_idle()
             if not an_artist_is_hovered:
-                annot_bar.set_visible(False)
-                fig.canvas.draw_idle()
+                subplot_props.annotation.set_visible(False)
+                subplot_props.figure.canvas.draw_idle()
 
 def pick(event, grouped_transactions_day_and_month: tuple) -> None:
     if event.mouseevent.inaxes:   
@@ -73,7 +67,7 @@ def pick(event, grouped_transactions_day_and_month: tuple) -> None:
             contains, ind = line.contains(event.mouseevent)
             if contains:
                 horizontal_pos_array = ind["ind"]
-                x, y = line.get_data()
+                x, _ = line.get_data()
                 date_key = x[horizontal_pos_array.min()].to_timestamp("D").tz_localize("UTC")
                 text = get_top_transactions_text(date_key, grouped_transactions)
                 update_annot(annot, text)
@@ -105,3 +99,13 @@ def get_top_transactions_text(date, grouped_transactions) -> str:
         top_amount_strings.append(string)
     top_amount_string = "\n".join(top_amount_strings)
     return top_amount_string
+
+class SubplotProperties:
+    def __init__(self, subplot):
+        self.figure = subplot.figure
+        self.annotation = subplot.texts[0]
+        self.line = subplot.lines[0] if subplot.lines else None
+        self.containers = subplot.containers[0] if subplot.containers else None
+        self.is_line_graph = self.line is not None
+        self.is_bar_chart = self.containers is not None
+    
