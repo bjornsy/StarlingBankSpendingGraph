@@ -8,17 +8,17 @@ today = datetime.datetime.now().replace(microsecond=0).isoformat() + 'Z'
 transactions = services.get_transactions(services.get_config_var('transactions_start_date'), today)
 
 df = pd.DataFrame(transactions)
-df['created'] = pd.to_datetime(df['created'])
+df['transactionTime'] = pd.to_datetime(df['transactionTime'])
 
-outbound_transactions = df[df.direction == 'OUTBOUND'][df.source != 'INTERNAL_TRANSFER'][['created', 'amount', 'narrative']].sort_values('created')
-outbound_transactions['amount'] = abs(df['amount'])
+outbound_transactions = df[df.direction == 'OUT'][df.source != 'INTERNAL_TRANSFER'][['transactionTime', 'amount', 'counterPartyName']].sort_values('transactionTime')
+outbound_transactions['amount'] = outbound_transactions['amount'].map(lambda x: x['minorUnits']/100)
 
-grouped_transactions_day = outbound_transactions.groupby(pd.Grouper(key='created', freq='D'))
-grouped_transactions_month = outbound_transactions.groupby(pd.Grouper(key='created', freq='M'))
+grouped_transactions_day = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='D'))
+grouped_transactions_month = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='M'))
 grouped_transactions = (grouped_transactions_day, grouped_transactions_month)
 
-grouped_transactions_day_sum = grouped_transactions_day[['created', 'amount']].sum()
-grouped_transactions_month_sum = grouped_transactions_month[['created', 'amount']].sum()
+grouped_transactions_day_sum = grouped_transactions_day[['transactionTime', 'amount']].sum()
+grouped_transactions_month_sum = grouped_transactions_month[['transactionTime', 'amount']].sum()
 
 fig, axs = plt.subplots(nrows = 1, ncols = 2)
 
