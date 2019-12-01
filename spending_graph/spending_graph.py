@@ -2,10 +2,10 @@ import services
 import graph_helpers
 import pandas as pd
 from matplotlib import pyplot as plt
-from datetime import date
+import datetime
 
-today = str(date.today())
-transactions = services.extract_transactions(services.get_transactions(services.get_config_var('transactions_start_date'), today))
+today = datetime.datetime.now().replace(microsecond=0).isoformat() + 'Z'
+transactions = services.get_transactions(services.get_config_var('transactions_start_date'), today)
 
 df = pd.DataFrame(transactions)
 df['created'] = pd.to_datetime(df['created'])

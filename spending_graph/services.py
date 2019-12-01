@@ -30,6 +30,20 @@ def get_environmental_var(name: str) -> str:
     else:
         return variable
 
+token = get_environmental_var('StarlingPersonalAccessToken')
+headers = {'Authorization': f'Bearer {token}'}
+
+def get_account_details() -> object:
+    '''Gets accountUid and categoryUid for further API calls
+    Returns: List of account objects
+    '''
+    endpoint = config['api_base_url'] + config['accounts_url']
+    response = requests.get(endpoint, headers=headers)
+    if response.ok:
+        return response
+    else:
+        response.raise_for_status()
+    
 def get_transactions(from_date=None, to_date=None) -> object:
     '''Gets all transactions spent for a given timeframe
     Args:
@@ -38,17 +52,18 @@ def get_transactions(from_date=None, to_date=None) -> object:
     Returns:
         list of transactions
     '''
-    endpoint = config['api_base_url'] + config['transactions_url']
-    token = get_environmental_var('StarlingPersonalAccessToken')
-    headers = {'Authorization': f'Bearer {token}'}
-    query_string = f'?from={from_date}&to={to_date}' if from_date or to_date else ''
+    account_details = get_account_details().json()['accounts'][0]
+    accountUid = account_details['accountUid']
+    categoryUid = account_details['defaultCategory']
+    endpoint = config['api_base_url'] + config['transactions_url'].replace('{accountUid}', accountUid).replace('{categoryUid}', categoryUid)
+    query_string = f'?minTransactionTimestamp={from_date}&maxTransactionTimestamp={to_date}' if from_date or to_date else ''
     response = requests.get(endpoint + query_string, headers=headers)
     if response.ok:
-        return response
+        return extract_transactions(response)
     else:
-        return None
+        response.raise_for_status()
 
 def extract_transactions(response_object) -> list:
-    transactions = response_object.json()['_embedded']['transactions']
+    transactions = response_object.json()['feedItems']
     return transactions
 
