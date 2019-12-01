@@ -33,14 +33,14 @@ def get_environmental_var(name: str) -> str:
 token = get_environmental_var('StarlingPersonalAccessToken')
 headers = {'Authorization': f'Bearer {token}'}
 
-def get_account_details() -> object:
+def get_account_details() -> dict:
     '''Gets accountUid and categoryUid for further API calls
-    Returns: List of account objects
+    Returns: Dict of account details
     '''
     endpoint = config['api_base_url'] + config['accounts_url']
     response = requests.get(endpoint, headers=headers)
     if response.ok:
-        return response
+        return response.json()['accounts'][0]
     else:
         response.raise_for_status()
     
@@ -52,7 +52,7 @@ def get_transactions(from_date=None, to_date=None) -> object:
     Returns:
         list of transactions
     '''
-    account_details = get_account_details().json()['accounts'][0]
+    account_details = get_account_details()
     accountUid = account_details['accountUid']
     categoryUid = account_details['defaultCategory']
     endpoint = config['api_base_url'] + config['transactions_url'].replace('{accountUid}', accountUid).replace('{categoryUid}', categoryUid)

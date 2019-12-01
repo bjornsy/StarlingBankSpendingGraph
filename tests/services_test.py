@@ -20,14 +20,20 @@ class TestServices(unittest.TestCase):
         except:
             self.fail('Get personal access token failed')
     
-    def test_get_transactions_success(self):
+    @patch('spending_graph.services.get_account_details')
+    def test_get_transactions_success(self, get_account_details):
+        mockAccountDetails = {'accountUid': 'accountUid', 'defaultCategory': 'categoryUid'}
+        get_account_details.return_value = (mockAccountDetails)
         with patch('spending_graph.services.requests.get') as mock_get:
             mock_get.return_value.ok = True
             response = services.get_transactions()
             self.assertIsNotNone(response)
     
-    def test_get_transactions_raises(self):
-        with patch('services.requests.get') as mock_get:
+    @patch('spending_graph.services.get_account_details')
+    def test_get_transactions_raises(self, get_account_details):
+        mockAccountDetails = {'accountUid': 'accountUid', 'defaultCategory': 'categoryUid'}
+        get_account_details.return_value = (mockAccountDetails)
+        with patch('spending_graph.services.requests.get') as mock_get:
             mock_get.return_value.ok = False
             mock_get.return_value.status = 500
             self.assertRaises(HTTPError, services.get_transactions())
