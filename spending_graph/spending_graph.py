@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import datetime
 
-#TODO: Add list of exceptions by id (e.g. paying back deposit)
+#TODO:
 #Add button to switch between graphs, clear up labels
 #Add total spend in one year
 
@@ -17,7 +17,10 @@ def get_outbound_transactions(transactions: list) -> object:
     df = pd.DataFrame(transactions)
     df['transactionTime'] = pd.to_datetime(df['transactionTime'])
 
-    outbound_transactions = df[df.direction == 'OUT'][df.source != 'INTERNAL_TRANSFER'][['transactionTime', 'amount', 'counterPartyName']].sort_values('transactionTime')
+    df = df[df.direction == 'OUT']
+    df = df[df.source != 'INTERNAL_TRANSFER']
+    df = df[~df.feedItemUid.isin(services.get_config_var('feed_items_to_ignore'))]
+    outbound_transactions = df[['transactionTime', 'amount', 'counterPartyName']].sort_values('transactionTime')
     outbound_transactions['amount'] = outbound_transactions['amount'].map(lambda x: x['minorUnits']/100)
 
     return outbound_transactions

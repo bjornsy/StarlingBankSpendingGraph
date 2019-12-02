@@ -3,5 +3,6 @@
     "accounts_url": "api/v2/accounts",
     "transactions_url": "api/v2/feed/account/{accountUid}/category/{categoryUid}/transactions-between",
     "transactions_start_date": "2018-10-01T00:00:00.000Z",
-    "bar_xtick_format": "%Y-%b"
+    "bar_xtick_format": "%Y-%b",
+    "feed_items_to_ignore": ["92b5c0cb-f8cd-5d39-c081-6f0eb1471c7e"]
 }
