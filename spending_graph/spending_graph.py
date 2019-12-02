@@ -4,34 +4,71 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import datetime
 
-today = datetime.datetime.now().replace(microsecond=0).isoformat() + 'Z'
-transactions = services.get_transactions(services.get_config_var('transactions_start_date'), today)
+#TODO: Add list of exceptions by id (e.g. paying back deposit)
+#Add button to switch between graphs, clear up labels
+#Add total spend in one year
 
-df = pd.DataFrame(transactions)
-df['transactionTime'] = pd.to_datetime(df['transactionTime'])
+def get_transactions() -> list:
+    today = datetime.datetime.now().replace(microsecond=0).isoformat() + 'Z'
+    transactions = services.get_transactions(services.get_config_var('transactions_start_date'), today)
+    return transactions
 
-outbound_transactions = df[df.direction == 'OUT'][df.source != 'INTERNAL_TRANSFER'][['transactionTime', 'amount', 'counterPartyName']].sort_values('transactionTime')
-outbound_transactions['amount'] = outbound_transactions['amount'].map(lambda x: x['minorUnits']/100)
+def get_outbound_transactions(transactions: list) -> object:
+    df = pd.DataFrame(transactions)
+    df['transactionTime'] = pd.to_datetime(df['transactionTime'])
 
-grouped_transactions_day = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='D'))
-grouped_transactions_month = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='M'))
-grouped_transactions = (grouped_transactions_day, grouped_transactions_month)
+    outbound_transactions = df[df.direction == 'OUT'][df.source != 'INTERNAL_TRANSFER'][['transactionTime', 'amount', 'counterPartyName']].sort_values('transactionTime')
+    outbound_transactions['amount'] = outbound_transactions['amount'].map(lambda x: x['minorUnits']/100)
 
-grouped_transactions_day_sum = grouped_transactions_day[['transactionTime', 'amount']].sum()
-grouped_transactions_month_sum = grouped_transactions_month[['transactionTime', 'amount']].sum()
+    return outbound_transactions
 
-fig, axs = plt.subplots(nrows = 1, ncols = 2)
+def get_grouped_transactions_day(outbound_transactions):
+    grouped_transactions_day = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='D'))
+    return grouped_transactions_day
 
-grouped_transactions_day_sum.plot(ax=axs[0], legend=None, picker=True)
-graph_helpers.set_common_properties(axs[0])
-axs[0].set_title('Amount spent per day')
+def get_grouped_transactions_month(outbound_transactions):
+    grouped_transactions_month = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='M'))
+    return grouped_transactions_month
 
-grouped_transactions_month_sum.plot.bar(ax=axs[1], legend=None, rot=0, picker=True)
-graph_helpers.set_common_properties(axs[1])
-axs[1].set_title('Amount spent per month')
-axs[1].set_xticklabels(grouped_transactions_month_sum.index.strftime(services.get_config_var("bar_xtick_format")))
+def get_grouped_transactions_day_sum(grouped_transactions_day):
+    grouped_transactions_day_sum = grouped_transactions_day[['transactionTime', 'amount']].sum()
+    return grouped_transactions_day_sum
 
-fig.canvas.mpl_connect("motion_notify_event", lambda event: graph_helpers.hover(event))
-fig.canvas.mpl_connect('pick_event', lambda event: graph_helpers.pick(event, grouped_transactions))
+def get_grouped_transactions_month_sum(grouped_transactions_month):
+    grouped_transactions_month_sum = grouped_transactions_month[['transactionTime', 'amount']].sum()
+    return grouped_transactions_month_sum
+    
+def plot_day_sum(grouped_transactions_day_sum, axs):
+    grouped_transactions_day_sum.plot(ax=axs[0], legend=None, picker=True)
+    graph_helpers.set_common_properties(axs[0])
+    axs[0].set_title('Amount spent per day')
 
-plt.show()
+def plot_month_sum(grouped_transactions_month_sum, axs):
+    grouped_transactions_month_sum.plot.bar(ax=axs[1], legend=None, rot=0, picker=True)
+    graph_helpers.set_common_properties(axs[1])
+    axs[1].set_title('Amount spent per month')
+    axs[1].set_xticklabels(grouped_transactions_month_sum.index.strftime(services.get_config_var("bar_xtick_format")))
+
+def set_figure(fig, grouped_transactions_day_and_month: tuple) -> None:
+    fig.canvas.mpl_connect("motion_notify_event", lambda event: graph_helpers.hover(event))
+    fig.canvas.mpl_connect('pick_event', lambda event: graph_helpers.pick(event, grouped_transactions_day_and_month))
+
+def plot_graphs(grouped_transactions_day_sum, grouped_transactions_month_sum, grouped_transactions_day_and_month: tuple) -> None:
+    fig, axs = plt.subplots(nrows = 1, ncols = 2)
+    plot_day_sum(grouped_transactions_day_sum, axs)
+    plot_month_sum(grouped_transactions_month_sum, axs)
+    set_figure(fig, grouped_transactions_day_and_month)
+    plt.show()
+
+def main():
+    transactions = get_transactions()
+    outbound_transactions = get_outbound_transactions(transactions)
+    grouped_transactions_day = get_grouped_transactions_day(outbound_transactions)
+    grouped_transactions_month = get_grouped_transactions_month(outbound_transactions)
+    grouped_transactions_day_and_month = (grouped_transactions_day, grouped_transactions_month)
+    grouped_transactions_day_sum = get_grouped_transactions_day_sum(grouped_transactions_day)
+    grouped_transactions_month_sum = get_grouped_transactions_month_sum(grouped_transactions_month)
+    plot_graphs(grouped_transactions_day_sum, grouped_transactions_month_sum, grouped_transactions_day_and_month)
+
+if __name__ == "__main__":
+    main()
