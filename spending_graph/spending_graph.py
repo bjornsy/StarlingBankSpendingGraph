@@ -13,7 +13,7 @@ def get_transactions() -> list:
     transactions = services.get_transactions(services.get_config_var('transactions_start_date'), today)
     return transactions
 
-def get_outbound_transactions(transactions: list) -> object:
+def get_outbound_transactions(transactions: list) -> pd.DataFrame:
     df = pd.DataFrame(transactions)
     df['transactionTime'] = pd.to_datetime(df['transactionTime'])
 
@@ -25,28 +25,28 @@ def get_outbound_transactions(transactions: list) -> object:
 
     return outbound_transactions
 
-def get_grouped_transactions_day(outbound_transactions):
+def get_grouped_transactions_day(outbound_transactions: pd.DataFrame) -> pd.core.groupby.generic.DataFrameGroupBy:
     grouped_transactions_day = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='D'))
     return grouped_transactions_day
 
-def get_grouped_transactions_month(outbound_transactions):
+def get_grouped_transactions_month(outbound_transactions: pd.DataFrame) -> pd.core.groupby.generic.DataFrameGroupBy:
     grouped_transactions_month = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='M'))
     return grouped_transactions_month
 
-def get_grouped_transactions_day_sum(grouped_transactions_day):
+def get_grouped_transactions_day_sum(grouped_transactions_day: pd.core.groupby.generic.DataFrameGroupBy) -> pd.DataFrame:
     grouped_transactions_day_sum = grouped_transactions_day[['transactionTime', 'amount']].sum()
     return grouped_transactions_day_sum
 
-def get_grouped_transactions_month_sum(grouped_transactions_month):
+def get_grouped_transactions_month_sum(grouped_transactions_month: pd.core.groupby.generic.DataFrameGroupBy) -> pd.DataFrame:
     grouped_transactions_month_sum = grouped_transactions_month[['transactionTime', 'amount']].sum()
     return grouped_transactions_month_sum
     
-def plot_day_sum(grouped_transactions_day_sum, axs):
+def plot_day_sum(grouped_transactions_day_sum: pd.DataFrame, axs) -> None:
     grouped_transactions_day_sum.plot(ax=axs[0], legend=None, picker=True)
     graph_helpers.set_common_properties(axs[0])
     axs[0].set_title('Amount spent per day')
 
-def plot_month_sum(grouped_transactions_month_sum, axs):
+def plot_month_sum(grouped_transactions_month_sum: pd.DataFrame, axs) -> None:
     grouped_transactions_month_sum.plot.bar(ax=axs[1], legend=None, rot=0, picker=True)
     graph_helpers.set_common_properties(axs[1])
     axs[1].set_title('Amount spent per month')
