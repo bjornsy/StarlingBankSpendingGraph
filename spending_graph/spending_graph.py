@@ -7,7 +7,6 @@ from datetime import timezone
 
 #TODO:
 #Add button to switch between graphs, clear up x axis labels
-#Add total spend since last Jan
 #Add total numbers on graph
 
 def get_transactions() -> list:
@@ -48,10 +47,15 @@ def calculate_total_spend_past_year(outbound_transactions) -> float:
     total = outbound_transactions[(outbound_transactions['transactionTime'] > one_year_ago)][['amount']].sum()['amount']
     return total
 
-def plot_day_sum(grouped_transactions_day_sum: pd.DataFrame, axs, total) -> None:
+def calculate_total_spend_since_jan(outbound_transactions) -> float:
+    first_of_year = (datetime.datetime(datetime.datetime.now().year, 1, 1)).replace(tzinfo=timezone.utc)
+    total = outbound_transactions[(outbound_transactions['transactionTime'] > first_of_year)][['amount']].sum()['amount']
+    return total
+
+def plot_day_sum(grouped_transactions_day_sum: pd.DataFrame, axs, totals) -> None:
     grouped_transactions_day_sum.plot(ax=axs[0], legend=None, picker=True)
     graph_helpers.set_common_properties(axs[0])
-    axs[0].set_title(f'Amount spent per day (Total £{total} past year)')
+    axs[0].set_title(f'Amount spent per day (£{totals[0]} past year, £{totals[1]} since Jan)')
 
 def plot_month_sum(grouped_transactions_month_sum: pd.DataFrame, axs) -> None:
     grouped_transactions_month_sum.plot.bar(ax=axs[1], legend=None, rot=0, picker=True)
@@ -63,9 +67,9 @@ def set_figure(fig, grouped_transactions_day_and_month: tuple) -> None:
     fig.canvas.mpl_connect("motion_notify_event", lambda event: graph_helpers.hover(event))
     fig.canvas.mpl_connect('pick_event', lambda event: graph_helpers.pick(event, grouped_transactions_day_and_month))
 
-def plot_graphs(grouped_transactions_day_sum, grouped_transactions_month_sum, grouped_transactions_day_and_month: tuple, total: float) -> None:
+def plot_graphs(grouped_transactions_day_sum, grouped_transactions_month_sum, grouped_transactions_day_and_month: tuple, totals: tuple) -> None:
     fig, axs = plt.subplots(nrows = 1, ncols = 2)
-    plot_day_sum(grouped_transactions_day_sum, axs, total)
+    plot_day_sum(grouped_transactions_day_sum, axs, totals)
     plot_month_sum(grouped_transactions_month_sum, axs)
     set_figure(fig, grouped_transactions_day_and_month)
     plt.show()
@@ -73,13 +77,13 @@ def plot_graphs(grouped_transactions_day_sum, grouped_transactions_month_sum, gr
 def main():
     transactions = get_transactions()
     outbound_transactions = get_outbound_transactions(transactions)
-    total_past_year = calculate_total_spend_past_year(outbound_transactions)
+    totals_past_year = (calculate_total_spend_past_year(outbound_transactions), calculate_total_spend_since_jan(outbound_transactions)) 
     grouped_transactions_day = get_grouped_transactions_day(outbound_transactions)
     grouped_transactions_month = get_grouped_transactions_month(outbound_transactions)
     grouped_transactions_day_and_month = (grouped_transactions_day, grouped_transactions_month)
     grouped_transactions_day_sum = get_grouped_transactions_day_sum(grouped_transactions_day)
     grouped_transactions_month_sum = get_grouped_transactions_month_sum(grouped_transactions_month)
-    plot_graphs(grouped_transactions_day_sum, grouped_transactions_month_sum, grouped_transactions_day_and_month, total_past_year)
+    plot_graphs(grouped_transactions_day_sum, grouped_transactions_month_sum, grouped_transactions_day_and_month, totals_past_year)
 
 if __name__ == "__main__":
     main()
