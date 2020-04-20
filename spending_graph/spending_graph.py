@@ -6,7 +6,7 @@ import datetime
 from datetime import timezone
 
 #TODO:
-#Add button to switch between graphs, clear up x axis labels
+#Add button to switch between graphs or split into 2 separate
 #Add total numbers on graph
 
 def get_transactions() -> list:
@@ -72,6 +72,8 @@ def plot_graphs(grouped_transactions_day_sum, grouped_transactions_month_sum, gr
     plot_day_sum(grouped_transactions_day_sum, axs, totals)
     plot_month_sum(grouped_transactions_month_sum, axs)
     set_figure(fig, grouped_transactions_day_and_month)
+    plt.subplots_adjust(bottom=0.15)
+    plt.xticks(rotation='vertical')
     plt.show()
 
 def main():
