@@ -14,7 +14,7 @@ The exact amount is displayed when hovering, and the largest 5 transactions are 
 ## Running the script 
 Add "StarlingPersonalAccessToken" as an environmental variable, after creating the personal access token with read permissions for your account at https://developer.starlingbank.com/personal/token
 
-Run spending_graph.py
+Assuming you have installed Python 3, run spending_graph.py
 
 
  

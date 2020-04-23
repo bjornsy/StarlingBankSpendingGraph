@@ -2,7 +2,7 @@ import os
 import requests
 import json
 
-with open('config.json') as config_file:
+with open('utilities/config.json') as config_file:
     config = json.load(config_file)
 
 def get_config_var(name: str) -> str:

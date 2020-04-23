@@ -1,6 +1,6 @@
 from datetime import datetime
 import pandas as pd
-import services
+from utilities import services
 
 def set_common_properties(subplot: 'matplotlib.axes._subplots.AxesSubplot') -> None:
     subplot.set_ylim(0)

@@ -1,5 +1,5 @@
-import services
-import graph_helpers
+from utilities import services
+from utilities import graph_helpers
 import pandas as pd
 from matplotlib import pyplot as plt
 import datetime
@@ -8,6 +8,8 @@ from datetime import timezone
 #TODO:
 #Add button to switch between graphs or split into 2 separate
 #Add total numbers on graph
+#Add method of seeing transaction ids to ignore
+#Add ability to divide transactions by a number
 
 def get_transactions() -> list:
     today = datetime.datetime.now().replace(microsecond=0).isoformat() + 'Z'
@@ -55,7 +57,7 @@ def calculate_total_spend_since_jan(outbound_transactions) -> float:
 def plot_day_sum(grouped_transactions_day_sum: pd.DataFrame, axs, totals) -> None:
     grouped_transactions_day_sum.plot(ax=axs[0], legend=None, picker=True)
     graph_helpers.set_common_properties(axs[0])
-    axs[0].set_title(f'Amount spent per day (£{totals[0]} past year, £{totals[1]} since Jan)')
+    axs[0].set_title(f'Amount spent per day ({graph_helpers.format_currency(totals[0])} past year, {graph_helpers.format_currency(totals[1])} since Jan)')
 
 def plot_month_sum(grouped_transactions_month_sum: pd.DataFrame, axs) -> None:
     grouped_transactions_month_sum.plot.bar(ax=axs[1], legend=None, rot=0, picker=True)
