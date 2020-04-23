@@ -1,7 +1,7 @@
 import unittest
 from requests import HTTPError
 from unittest.mock import patch
-from spending_graph import services
+from utilities import services
 
 class TestServices(unittest.TestCase):
     #Test get_config_var()
@@ -24,16 +24,25 @@ class TestServices(unittest.TestCase):
     def test_get_transactions_success(self, get_account_details):
         mockAccountDetails = {'accountUid': 'accountUid', 'defaultCategory': 'categoryUid'}
         get_account_details.return_value = (mockAccountDetails)
+        from_date = '2020-01-01T00:00:00.000Z'
+        to_date = '2020-01-02T00:00:00.000Z'
         with patch('spending_graph.services.requests.get') as mock_get:
             mock_get.return_value.ok = True
-            response = services.get_transactions()
+            response = services.get_transactions(from_date, to_date)
             self.assertIsNotNone(response)
     
+    def test_get_transactions_no_args_raises(self):
+        from_date = None
+        to_date = None
+        self.assertRaises(ValueError, services.get_transactions, from_date, to_date)
+    
     @patch('spending_graph.services.get_account_details')
-    def test_get_transactions_raises(self, get_account_details):
+    def test_get_transactions_api_raises(self, get_account_details):
         mockAccountDetails = {'accountUid': 'accountUid', 'defaultCategory': 'categoryUid'}
         get_account_details.return_value = (mockAccountDetails)
+        from_date = '2020-01-01T00:00:00.000Z'
+        to_date = '2020-01-02T00:00:00.000Z'
         with patch('spending_graph.services.requests.get') as mock_get:
             mock_get.return_value.ok = False
             mock_get.return_value.status = 500
-            self.assertRaises(HTTPError, services.get_transactions())
+            self.assertRaises(HTTPError, services.get_transactions(from_date, to_date))

@@ -44,19 +44,22 @@ def get_account_details() -> dict:
     else:
         response.raise_for_status()
     
-def get_transactions(from_date=None, to_date=None) -> object:
+def get_transactions(from_date: str, to_date: str) -> object:
     '''Gets all transactions spent for a given timeframe
     Args:
-        from_date (str): YYYY-MM-DD
-        to_date (str): YYYY-MM-DD
+        from_date (str): YYYY-MM-DDTHH:MM:SS.fffK
+        to_date (str): YYYY-MM-DDTHH:MM:SS.fffK
     Returns:
         list of transactions
     '''
+    if not from_date or not to_date:
+        raise ValueError('From and to dates are required')
+
     account_details = get_account_details()
     accountUid = account_details['accountUid']
     categoryUid = account_details['defaultCategory']
     endpoint = config['api_base_url'] + config['transactions_url'].replace('{accountUid}', accountUid).replace('{categoryUid}', categoryUid)
-    query_string = f'?minTransactionTimestamp={from_date}&maxTransactionTimestamp={to_date}' if from_date or to_date else ''
+    query_string = f'?minTransactionTimestamp={from_date}&maxTransactionTimestamp={to_date}'
     response = requests.get(endpoint + query_string, headers=headers)
     if response.ok:
         return extract_transactions(response)
