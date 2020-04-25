@@ -6,8 +6,9 @@ import datetime
 from datetime import timezone
 
 #TODO:
-#Add button to switch between graphs or split into 2 separate
-#Add total numbers on graph
+#Add button to switch between graphs or split into separate figs
+#Add total numbers on graph as key
+#Extend to add year totals
 
 items_to_ignore = services.get_config_var('feed_items_to_ignore')
 items_to_divide = services.get_config_var('feed_items_to_divide')
@@ -35,31 +36,22 @@ def calculate_amount(amount: object, feedItemUid: str) -> float:
         return final_amount/items_to_divide[feedItemUid]
     return final_amount
 
-def get_grouped_transactions_day(outbound_transactions: pd.DataFrame) -> pd.core.groupby.generic.DataFrameGroupBy:
-    grouped_transactions_day = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='D'))
-    return grouped_transactions_day
+def get_grouped_transactions(outbound_transactions: pd.DataFrame, frequency: str) -> pd.core.groupby.generic.DataFrameGroupBy:
+    return outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq=frequency))
 
-def get_grouped_transactions_month(outbound_transactions: pd.DataFrame) -> pd.core.groupby.generic.DataFrameGroupBy:
-    grouped_transactions_month = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='M'))
-    return grouped_transactions_month
+def get_grouped_transactions_sum(grouped_transactions: pd.core.groupby.generic.DataFrameGroupBy) -> pd.DataFrame:
+    return grouped_transactions[['transactionTime', 'amount']].sum()
 
-def get_grouped_transactions_day_sum(grouped_transactions_day: pd.core.groupby.generic.DataFrameGroupBy) -> pd.DataFrame:
-    grouped_transactions_day_sum = grouped_transactions_day[['transactionTime', 'amount']].sum()
-    return grouped_transactions_day_sum
+def calculate_total_spend(outbound_transactions: pd.DataFrame, date_from: datetime) -> float:
+    return outbound_transactions[(outbound_transactions['transactionTime'] > date_from)][['amount']].sum()['amount']
 
-def get_grouped_transactions_month_sum(grouped_transactions_month: pd.core.groupby.generic.DataFrameGroupBy) -> pd.DataFrame:
-    grouped_transactions_month_sum = grouped_transactions_month[['transactionTime', 'amount']].sum()
-    return grouped_transactions_month_sum
-
-def calculate_total_spend_past_year(outbound_transactions) -> float:
+def calculate_total_spend_past_year(outbound_transactions: pd.DataFrame) -> float:
     one_year_ago = (datetime.datetime.now() - datetime.timedelta(days=365)).replace(tzinfo=timezone.utc)
-    total = outbound_transactions[(outbound_transactions['transactionTime'] > one_year_ago)][['amount']].sum()['amount']
-    return total
+    return calculate_total_spend(outbound_transactions, one_year_ago)
 
-def calculate_total_spend_since_jan(outbound_transactions) -> float:
+def calculate_total_spend_since_jan(outbound_transactions: pd.DataFrame) -> float:
     first_of_year = (datetime.datetime(datetime.datetime.now().year, 1, 1)).replace(tzinfo=timezone.utc)
-    total = outbound_transactions[(outbound_transactions['transactionTime'] > first_of_year)][['amount']].sum()['amount']
-    return total
+    return calculate_total_spend(outbound_transactions, first_of_year)
 
 def plot_day_sum(grouped_transactions_day_sum: pd.DataFrame, axs, totals) -> None:
     grouped_transactions_day_sum.plot(ax=axs[0], legend=None, picker=True)
@@ -89,11 +81,11 @@ def main():
     transactions = get_transactions()
     outbound_transactions = get_outbound_transactions(transactions)
     totals_past_year = (calculate_total_spend_past_year(outbound_transactions), calculate_total_spend_since_jan(outbound_transactions)) 
-    grouped_transactions_day = get_grouped_transactions_day(outbound_transactions)
-    grouped_transactions_month = get_grouped_transactions_month(outbound_transactions)
+    grouped_transactions_day = get_grouped_transactions(outbound_transactions, 'D')
+    grouped_transactions_month = get_grouped_transactions(outbound_transactions, 'M')
     grouped_transactions_day_and_month = (grouped_transactions_day, grouped_transactions_month)
-    grouped_transactions_day_sum = get_grouped_transactions_day_sum(grouped_transactions_day)
-    grouped_transactions_month_sum = get_grouped_transactions_month_sum(grouped_transactions_month)
+    grouped_transactions_day_sum = get_grouped_transactions_sum(grouped_transactions_day)
+    grouped_transactions_month_sum = get_grouped_transactions_sum(grouped_transactions_month)
     plot_graphs(grouped_transactions_day_sum, grouped_transactions_month_sum, grouped_transactions_day_and_month, totals_past_year)
 
 if __name__ == "__main__":
