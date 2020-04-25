@@ -22,33 +22,39 @@ class TestServices(unittest.TestCase):
         except:
             self.fail('Get personal access token failed')
     
+    @patch('spending_graph.services.requests.get')
     @patch('spending_graph.services.get_account_details')
-    def test_get_transactions_success(self, get_account_details):
+    def test_get_transactions_success(self, mock_get_account_details, mock_get):
         mockAccountDetails = {'accountUid': 'accountUid', 'defaultCategory': 'categoryUid'}
-        get_account_details.return_value = (mockAccountDetails)
+        mock_get_account_details.return_value = (mockAccountDetails)
+
+        mock_resp = requests.models.Response()
+        mock_resp.status_code = 200
+        mock_resp.json = lambda: {'feedItems': []}
+        mock_get.return_value = mock_resp
+
         from_date = '2020-01-01T00:00:00.000Z'
         to_date = '2020-01-02T00:00:00.000Z'
-        with patch('spending_graph.services.requests.get') as mock_get:
-            mock_resp = requests.models.Response()
-            mock_resp.status_code = 200
-            mock_resp.json = lambda: {'feedItems': []}
-            mock_get.return_value = mock_resp
-            response = services.get_transactions(from_date, to_date)
-            self.assertIsNotNone(response)
+        response = services.get_transactions(from_date, to_date)
+
+        self.assertIsNotNone(response)
     
     def test_get_transactions_no_args_raises(self):
         from_date = None
         to_date = None
         self.assertRaises(ValueError, services.get_transactions, from_date, to_date)
     
+    @patch('spending_graph.services.requests.get')
     @patch('spending_graph.services.get_account_details')
-    def test_get_transactions_api_raises(self, get_account_details):
+    def test_get_transactions_api_raises(self, mock_get_account_details, mock_get):
         mockAccountDetails = {'accountUid': 'accountUid', 'defaultCategory': 'categoryUid'}
-        get_account_details.return_value = (mockAccountDetails)
+        mock_get_account_details.return_value = (mockAccountDetails)
+
+        mock_resp = requests.models.Response()
+        mock_resp.status_code = 500
+        mock_get.return_value = mock_resp
+
         from_date = '2020-01-01T00:00:00.000Z'
         to_date = '2020-01-02T00:00:00.000Z'
-        with patch('spending_graph.services.requests.get') as mock_get:
-            mock_resp = requests.models.Response()
-            mock_resp.status_code = 500
-            mock_get.return_value = mock_resp
-            self.assertRaises(requests.HTTPError, services.get_transactions, from_date, to_date)
+        
+        self.assertRaises(requests.HTTPError, services.get_transactions, from_date, to_date)
