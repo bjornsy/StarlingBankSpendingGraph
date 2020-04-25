@@ -1,9 +1,11 @@
 import os
 import requests
 import json
+import configparser
 
-with open('utilities/config.json') as config_file:
-    config = json.load(config_file)
+config = configparser.RawConfigParser()
+with open('utilities/config.ini') as config_file: 
+    config.read_string('[Main]\n' + config_file.read())
 
 def get_config_var(name: str) -> str:
     '''Returns config variables from config.json
@@ -12,7 +14,7 @@ def get_config_var(name: str) -> str:
     Returns:
         Corresponding variable
     '''
-    return config[name]
+    return config['Main'][name]
 
 def get_environmental_var(name: str) -> str:
     '''Returns environmental variables for keys/secrets
@@ -36,7 +38,7 @@ def get_account_details() -> dict:
     '''Gets accountUid and categoryUid for further API calls
     Returns: Dict of account details
     '''
-    endpoint = config['api_base_url'] + config['accounts_url']
+    endpoint = get_config_var('api_base_url') + get_config_var('accounts_url')
     response = requests.get(endpoint, headers=headers)
     if response.ok:
         return response.json()['accounts'][0]
@@ -57,7 +59,7 @@ def get_transactions(from_date: str, to_date: str) -> object:
     account_details = get_account_details()
     accountUid = account_details['accountUid']
     categoryUid = account_details['defaultCategory']
-    endpoint = config['api_base_url'] + config['transactions_url'].replace('{accountUid}', accountUid).replace('{categoryUid}', categoryUid)
+    endpoint = get_config_var('api_base_url') + get_config_var('transactions_url').replace('{accountUid}', accountUid).replace('{categoryUid}', categoryUid)
     query_string = f'?minTransactionTimestamp={from_date}&maxTransactionTimestamp={to_date}'
     response = requests.get(endpoint + query_string, headers=headers)
     if response.ok:

@@ -6,14 +6,7 @@ sys.path.append(".")
 from utilities import services
 
 class TestServices(unittest.TestCase):
-    #Test get_config_var()
-    def test_base_url_exists(self):
-        expected = 'https://api.starlingbank.com/'
-        
-        actual = services.get_config_var('api_base_url')
-
-        self.assertEqual(expected, actual)
-    
+      
     @patch('os.environ.get')
     def test_personal_access_token_exists(self, mock_environ_get):
         mock_token = 'token'

@@ -4,14 +4,20 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import datetime
 from datetime import timezone
+import json
 
 #TODO:
 #Add button to switch between graphs or split into separate figs
 #Add total numbers on graph as key
 #Extend to add year totals
 
-items_to_ignore = services.get_config_var('feed_items_to_ignore')
-items_to_divide = services.get_config_var('feed_items_to_divide')
+try:
+    services.get_environmental_var('StarlingPersonalAccessToken')
+except:
+    raise('Get personal access token failed')
+
+items_to_ignore = json.loads(services.get_config_var('feed_items_to_ignore'))
+items_to_divide = json.loads(services.get_config_var('feed_items_to_divide'))
 
 def get_transactions() -> list:
     today = datetime.datetime.now().replace(microsecond=0).isoformat() + 'Z'
