@@ -14,7 +14,6 @@ def get_config_var(name: str) -> str:
     '''
     return config[name]
 
-
 def get_environmental_var(name: str) -> str:
     '''Returns environmental variables for keys/secrets
     Args:
