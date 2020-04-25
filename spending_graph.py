@@ -8,8 +8,9 @@ from datetime import timezone
 #TODO:
 #Add button to switch between graphs or split into 2 separate
 #Add total numbers on graph
-#Add method of seeing transaction ids to ignore
-#Add ability to divide transactions by a number
+
+items_to_ignore = services.get_config_var('feed_items_to_ignore')
+items_to_divide = services.get_config_var('feed_items_to_divide')
 
 def get_transactions() -> list:
     today = datetime.datetime.now().replace(microsecond=0).isoformat() + 'Z'
@@ -22,11 +23,17 @@ def get_outbound_transactions(transactions: list) -> pd.DataFrame:
 
     df = df[df.direction == 'OUT']
     df = df[df.source != 'INTERNAL_TRANSFER']
-    df = df[~df.feedItemUid.isin(services.get_config_var('feed_items_to_ignore'))]
+    df = df[~df.feedItemUid.isin(items_to_ignore)]
+    df['amount'] = df.apply(lambda x: calculate_amount(x.amount, x.feedItemUid), axis=1)
     outbound_transactions = df[['transactionTime', 'amount', 'counterPartyName']].sort_values('transactionTime')
-    outbound_transactions['amount'] = outbound_transactions['amount'].map(lambda x: x['minorUnits']/100)
 
     return outbound_transactions
+
+def calculate_amount(amount: object, feedItemUid: str) -> float:
+    final_amount = amount['minorUnits']/100
+    if feedItemUid in items_to_divide:
+        return final_amount/items_to_divide[feedItemUid]
+    return final_amount
 
 def get_grouped_transactions_day(outbound_transactions: pd.DataFrame) -> pd.core.groupby.generic.DataFrameGroupBy:
     grouped_transactions_day = outbound_transactions.groupby(pd.Grouper(key='transactionTime', freq='D'))

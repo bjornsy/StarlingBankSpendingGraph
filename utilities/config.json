@@ -4,5 +4,19 @@
     "transactions_url": "api/v2/feed/account/{accountUid}/category/{categoryUid}/transactions-between",
     "transactions_start_date": "2018-10-01T00:00:00.000Z",
     "bar_xtick_format": "%Y-%b",
-    "feed_items_to_ignore": ["92b5c0cb-f8cd-5d39-c081-6f0eb1471c7e"]
+    "feed_items_to_ignore": ["92b5c0cb-f8cd-5d39-c081-6f0eb1471c7e"],
+    "feed_items_to_divide": {
+                                "de105d75-9147-4df7-b0e1-6c5b17554ed8": 2,
+                                "de03e607-7351-42f0-b169-39097e66af0f": 2,
+                                "a4c07e3a-d72e-459f-b224-f30f26e1dcea": 2,
+                                "61fc3147-516c-4bf7-a750-5455c9699927": 2,
+                                "61dc9b2d-0988-4844-9f73-60ba4c8412fe": 2,
+                                "2fcc297d-fa38-4f2a-b1d5-a0ee2ce8989f": 2,
+                                "2f107988-d1de-4a6c-be14-203d02197b43": 2,
+                                "455ab55a-7ec2-4034-95b8-726542ee39fb": 2,
+                                "29c169a7-9bf6-480c-87fc-05e9ad16174b": 3,
+                                "347fefac-23dc-4411-ac0f-0233be9a4034": 4,
+                                "ad404fb2-c3dd-49ed-8752-aa3d736ec854": 3,
+                                "9b172510-5da1-43d1-a506-b4149c140ae3": 2
+                            }
 }
