@@ -1,6 +1,8 @@
 import unittest
 import requests
 from unittest.mock import patch
+import sys
+sys.path.append(".")
 from utilities import services
 
 class TestServices(unittest.TestCase):
