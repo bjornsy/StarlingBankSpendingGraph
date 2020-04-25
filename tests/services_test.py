@@ -1,5 +1,5 @@
 import unittest
-from requests import HTTPError
+import requests
 from unittest.mock import patch
 from utilities import services
 
@@ -27,7 +27,10 @@ class TestServices(unittest.TestCase):
         from_date = '2020-01-01T00:00:00.000Z'
         to_date = '2020-01-02T00:00:00.000Z'
         with patch('spending_graph.services.requests.get') as mock_get:
-            mock_get.return_value.ok = True
+            mock_resp = requests.models.Response()
+            mock_resp.status_code = 200
+            mock_resp.json = lambda: {'feedItems': []}
+            mock_get.return_value = mock_resp
             response = services.get_transactions(from_date, to_date)
             self.assertIsNotNone(response)
     
@@ -43,6 +46,7 @@ class TestServices(unittest.TestCase):
         from_date = '2020-01-01T00:00:00.000Z'
         to_date = '2020-01-02T00:00:00.000Z'
         with patch('spending_graph.services.requests.get') as mock_get:
-            mock_get.return_value.ok = False
-            mock_get.return_value.status = 500
-            self.assertRaises(HTTPError, services.get_transactions(from_date, to_date))
+            mock_resp = requests.models.Response()
+            mock_resp.status_code = 500
+            mock_get.return_value = mock_resp
+            self.assertRaises(requests.HTTPError, services.get_transactions, from_date, to_date)
