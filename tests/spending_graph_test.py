@@ -2,6 +2,8 @@ import unittest
 import requests
 from unittest.mock import patch
 import pandas as pd
+import datetime
+from datetime import timezone
 import sys
 sys.path.append(".")
 import spending_graph
@@ -85,3 +87,23 @@ class TestSpendingGraph(unittest.TestCase):
         self.assertEqual(outbound_transactions['amount'].iloc[1], 11.60) #Amount divided by 100
         self.assertEqual(outbound_transactions['amount'].iloc[0], 5.00) #Amount divided by 100 and by 2
         self.assertLess(outbound_transactions['transactionTime'].iloc[0], outbound_transactions['transactionTime'].iloc[1]) #Sorted by time, oldest first
+
+    @patch('spending_graph.items_to_divide', {'divideUid': 2})
+    @patch('spending_graph.items_to_ignore', ['ignoreUid'])
+    def test_calculate_total_spend_all(self):
+        all_date_from = datetime.datetime(2020, 1, 1).replace(tzinfo=timezone.utc)
+        outbound_transactions = spending_graph.get_outbound_transactions(self.mock_transactions)
+
+        total = spending_graph.calculate_total_spend(outbound_transactions, all_date_from)
+
+        self.assertEqual(total, outbound_transactions['amount'].iloc[0] + outbound_transactions['amount'].iloc[1])
+    
+    @patch('spending_graph.items_to_divide', {'divideUid': 2})
+    @patch('spending_graph.items_to_ignore', ['ignoreUid'])
+    def test_calculate_total_spend_one(self):
+        one_date_from = datetime.datetime(2020, 4, 1).replace(tzinfo=timezone.utc)
+        outbound_transactions = spending_graph.get_outbound_transactions(self.mock_transactions)
+
+        total = spending_graph.calculate_total_spend(outbound_transactions, one_date_from)
+
+        self.assertEqual(total, outbound_transactions['amount'].iloc[1])
