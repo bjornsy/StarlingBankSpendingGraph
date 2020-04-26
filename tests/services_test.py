@@ -23,7 +23,7 @@ class TestServices(unittest.TestCase):
         
         self.assertRaises(ValueError, services.get_environmental_var, 'TokenName')
 
-    @patch('spending_graph.services.requests.get')
+    @patch('utilities.services.requests.get')
     def test_get_account_details(self, mock_get):
         mock_account_details = {"accountUid":"accountUid","defaultCategory":"defaultCategory","currency":"GBP","createdAt":"2018-04-01T12:32:56.967Z"}
         mock_resp = requests.models.Response()
@@ -36,7 +36,7 @@ class TestServices(unittest.TestCase):
         mock_get.assert_called_once()
         self.assertEqual(response, mock_account_details)
 
-    @patch('spending_graph.services.requests.get')
+    @patch('utilities.services.requests.get')
     def test_get_account_details_raises(self, mock_get):
         mock_resp = requests.models.Response()
         mock_resp.status_code = 400
@@ -44,8 +44,8 @@ class TestServices(unittest.TestCase):
 
         self.assertRaises(requests.HTTPError, services.get_account_details)
 
-    @patch('spending_graph.services.requests.get')
-    @patch('spending_graph.services.get_account_details')
+    @patch('utilities.services.requests.get')
+    @patch('utilities.services.get_account_details')
     def test_get_transactions_success(self, mock_get_account_details, mock_get):
         mock_transactions = [{
             'feedItemUid':'feedItemUid',
@@ -90,8 +90,8 @@ class TestServices(unittest.TestCase):
 
         self.assertRaises(ValueError, services.get_transactions, from_date, to_date)
     
-    @patch('spending_graph.services.requests.get')
-    @patch('spending_graph.services.get_account_details')
+    @patch('utilities.services.requests.get')
+    @patch('utilities.services.get_account_details')
     def test_get_transactions_api_raises(self, mock_get_account_details, mock_get):
         mockAccountDetails = {'accountUid': 'accountUid', 'defaultCategory': 'categoryUid'}
         mock_get_account_details.return_value = (mockAccountDetails)
